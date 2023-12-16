@@ -1,11 +1,11 @@
 package ru.example;
 
-import ru.example.client.Client;
-import ru.example.request.Request;
-import ru.example.handler.RequestHandler;
-import ru.example.request.RequestType;
 import ru.example.back.BackSystem;
+import ru.example.client.Client;
 import ru.example.front.FrontalSystem;
+import ru.example.handler.RequestHandler;
+import ru.example.request.Request;
+import ru.example.request.RequestType;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -17,14 +17,14 @@ public class Main {
         Supplier<Request> safeRequestSupplier = () -> {
             try {
                 return frontalSystem.takeRequest();
-            }catch (InterruptedException e){
+            } catch (InterruptedException e) {
                 throw new RuntimeException("Не удалось передать заявку обработчику");
             }
         };
         Consumer<Request> safeRequestConsumer = (request) -> {
             try {
                 frontalSystem.addRequest(request);
-            }catch (InterruptedException e){
+            } catch (InterruptedException e) {
                 throw new RuntimeException("Не удалось передать заявку обработчику");
             }
         };
@@ -33,7 +33,7 @@ public class Main {
                 safeRequestConsumer));
         Thread client2 = new Thread(new Client("Клиент2",
                 new Request("Клиент2", 15000, RequestType.PAYMENT),
-               safeRequestConsumer));
+                safeRequestConsumer));
         Thread client3 = new Thread(new Client("Клиент3",
                 new Request("Клиент3", 20000, RequestType.PAYMENT),
                 safeRequestConsumer));

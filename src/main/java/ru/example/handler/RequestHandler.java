@@ -6,7 +6,7 @@ import ru.example.request.Request;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class RequestHandler implements Runnable{
+public class RequestHandler implements Runnable {
     private final String name;
     private final Supplier<Request> requestSupplier;
     private final Consumer<HandlingRequestDto> requestDtoConsumer;
@@ -20,11 +20,11 @@ public class RequestHandler implements Runnable{
 
     @Override
     public void run() {
-        while(true){
+        while (true) {
             Request handlingRequest = requestSupplier.get();
             System.out.printf("%s: Получена заявка на обработку по клиенту - %s%n",
                     name, handlingRequest.getClientThreadName());
-            requestDtoConsumer.accept(new HandlingRequestDto(name,handlingRequest));
+            requestDtoConsumer.accept(new HandlingRequestDto(name, handlingRequest));
         }
 
     }
