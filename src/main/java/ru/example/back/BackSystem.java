@@ -20,7 +20,7 @@ public class BackSystem {
         this.bankAmount = bankAmount;
     }
 
-    public synchronized void processRequest(HandlingRequestDto dto) {
+    public void processRequest(HandlingRequestDto dto) {
         RequestType type = dto.getRequest().getRequestType();
         switch (type) {
             case CREDIT: {
@@ -34,13 +34,13 @@ public class BackSystem {
         }
     }
 
-    private void handlePayment(HandlingRequestDto dto) {
+    private synchronized void handlePayment(HandlingRequestDto dto) {
         bankAmount += dto.getRequest().getAmount();
         System.out.printf("%s: Заявка: %s УСПЕШНО ВЫПОЛНЕНА. Получена от: %s. Баланс банка: %d%n",
                 name, dto.getRequest(), dto.getCallerName(), bankAmount);
     }
 
-    private void handleCredit(HandlingRequestDto dto) {
+    private synchronized void handleCredit(HandlingRequestDto dto) {
         if (bankAmount - dto.getRequest().getAmount() < 0) {
             System.out.printf("%s: Заявка: %s НЕ ВЫПОЛНЕНА. Получена от: %s. Сумма больше баланса банка." +
                     " Баланс банка: %d%n", name, dto.getRequest(), dto.getCallerName(), bankAmount);

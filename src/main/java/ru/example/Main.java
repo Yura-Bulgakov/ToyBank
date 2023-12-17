@@ -6,7 +6,6 @@ import ru.example.front.FrontalSystem;
 import ru.example.handler.RequestHandler;
 import ru.example.request.Request;
 import ru.example.request.RequestType;
-
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -55,6 +54,5 @@ public class Main {
         client5.start();
         requestHandler1.start();
         requestHandler2.start();
-
     }
 }
