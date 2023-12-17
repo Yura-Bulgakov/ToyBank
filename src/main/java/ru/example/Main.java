@@ -1,18 +1,25 @@
 package ru.example;
 
+import ru.example.back.BackAmountService;
 import ru.example.back.BackSystem;
 import ru.example.client.Client;
 import ru.example.front.FrontalSystem;
 import ru.example.handler.RequestHandler;
 import ru.example.request.Request;
 import ru.example.request.RequestType;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class Main {
     public static void main(String[] args) {
         FrontalSystem frontalSystem = new FrontalSystem(2);
-        BackSystem backSystem = new BackSystem("Бэк система", 0);
+        BackSystem backSystem = new BackSystem("Бэк система");
+        ExecutorService executorService = Executors.newFixedThreadPool(7);
         Supplier<Request> safeRequestSupplier = () -> {
             try {
                 return frontalSystem.takeRequest();
@@ -27,32 +34,44 @@ public class Main {
                 throw new RuntimeException("Не удалось передать заявку обработчику");
             }
         };
-        Thread client1 = new Thread(new Client("Клиент1",
-                new Request("Клиент1", 10000, RequestType.PAYMENT),
-                safeRequestConsumer));
-        Thread client2 = new Thread(new Client("Клиент2",
-                new Request("Клиент2", 15000, RequestType.PAYMENT),
-                safeRequestConsumer));
-        Thread client3 = new Thread(new Client("Клиент3",
-                new Request("Клиент3", 20000, RequestType.PAYMENT),
-                safeRequestConsumer));
-        Thread client4 = new Thread(new Client("Клиент4",
-                new Request("Клиент4", 5000, RequestType.CREDIT),
-                safeRequestConsumer));
-        Thread client5 = new Thread(new Client("Клиент5",
-                new Request("Клиент5", 150000, RequestType.CREDIT),
-                safeRequestConsumer));
 
-        Thread requestHandler1 = new Thread(new RequestHandler("Обработчик заявок №1", safeRequestSupplier,
-                backSystem::processRequest));
-        Thread requestHandler2 = new Thread(new RequestHandler("Обработчик заявок №2", safeRequestSupplier,
-                backSystem::processRequest));
-        client1.start();
-        client2.start();
-        client3.start();
-        client4.start();
-        client5.start();
-        requestHandler1.start();
-        requestHandler2.start();
+        List<BackAmountService> backAmountServices = new ArrayList<>(3);
+        backAmountServices.add(new BackAmountService(5000, backSystem, 10000));
+        backAmountServices.add(new BackAmountService(5000, backSystem, 1000));
+        backAmountServices.add(new BackAmountService(5000, backSystem, 20000));
+
+        Client client1 = new Client("Клиент1",
+                new Request("Клиент1", 10000, RequestType.PAYMENT),
+                safeRequestConsumer);
+        Client client2 = new Client("Клиент2",
+                new Request("Клиент2", 15000, RequestType.PAYMENT),
+                safeRequestConsumer);
+        Client client3 = new Client("Клиент3",
+                new Request("Клиент3", 20000, RequestType.PAYMENT),
+                safeRequestConsumer);
+        Client client4 = new Client("Клиент4",
+                new Request("Клиент4", 5000, RequestType.CREDIT),
+                safeRequestConsumer);
+        Client client5 = new Client("Клиент5",
+                new Request("Клиент5", 150000, RequestType.CREDIT),
+                safeRequestConsumer);
+
+        RequestHandler requestHandler1 = new RequestHandler("Обработчик заявок №1", safeRequestSupplier,
+                backSystem::processRequest);
+        RequestHandler requestHandler2 = new RequestHandler("Обработчик заявок №2", safeRequestSupplier,
+                backSystem::processRequest);
+
+        try {
+            executorService.invokeAll(backAmountServices);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        executorService.submit(client1);
+        executorService.submit(client2);
+        executorService.submit(client3);
+        executorService.submit(client4);
+        executorService.submit(client5);
+        executorService.submit(requestHandler1);
+        executorService.submit(requestHandler2);
     }
 }

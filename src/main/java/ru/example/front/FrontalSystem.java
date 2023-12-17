@@ -2,33 +2,20 @@ package ru.example.front;
 
 import ru.example.request.Request;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class FrontalSystem {
-    private final Queue<Request> requestsQueue;
-    private final int capacity;
+    private final ArrayBlockingQueue<Request> requestsQueue;
 
     public FrontalSystem(int capacity) {
-        this.capacity = capacity;
-        requestsQueue = new ArrayDeque<>();
+        requestsQueue = new ArrayBlockingQueue<>(capacity);
     }
 
-    public synchronized void addRequest(Request request) throws InterruptedException {
-        while (requestsQueue.size() >= capacity) {
-            wait();
-        }
-        requestsQueue.add(request);
-        notifyAll();
+    public void addRequest(Request request) throws InterruptedException {
+        requestsQueue.put(request);
     }
 
-
-    public synchronized Request takeRequest() throws InterruptedException {
-        while (requestsQueue.size() < 1) {
-            wait();
-        }
-        var returnRequest = requestsQueue.poll();
-        notifyAll();
-        return returnRequest;
+    public Request takeRequest() throws InterruptedException {
+        return requestsQueue.take();
     }
 }

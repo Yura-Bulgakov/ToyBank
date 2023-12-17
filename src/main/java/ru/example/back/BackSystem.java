@@ -3,21 +3,23 @@ package ru.example.back;
 import ru.example.request.HandlingRequestDto;
 import ru.example.request.RequestType;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class BackSystem {
     private final String name;
-    private int bankAmount;
+    private AtomicLong bankAmount;
 
-    public BackSystem(String name, int initialBankAmount) {
+    public BackSystem(String name) {
         this.name = name;
-        this.bankAmount = initialBankAmount;
+        this.bankAmount = new AtomicLong(0);
     }
 
-    public int getBankAmount() {
+    public AtomicLong getBankAmount() {
         return bankAmount;
     }
 
     public void setBankAmount(int bankAmount) {
-        this.bankAmount = bankAmount;
+        this.bankAmount.getAndUpdate((x) -> x + bankAmount);
     }
 
     public void processRequest(HandlingRequestDto dto) {
@@ -34,21 +36,21 @@ public class BackSystem {
         }
     }
 
-    private synchronized void handlePayment(HandlingRequestDto dto) {
-        bankAmount += dto.getRequest().getAmount();
+    private void handlePayment(HandlingRequestDto dto) {
+        bankAmount.getAndUpdate((amount) -> amount + dto.getRequest().getAmount());
         System.out.printf("%s: Заявка: %s УСПЕШНО ВЫПОЛНЕНА. Получена от: %s. Баланс банка: %d%n",
-                name, dto.getRequest(), dto.getCallerName(), bankAmount);
+                name, dto.getRequest(), dto.getCallerName(), bankAmount.get());
     }
 
-    private synchronized void handleCredit(HandlingRequestDto dto) {
-        if (bankAmount - dto.getRequest().getAmount() < 0) {
+    private void handleCredit(HandlingRequestDto dto) {
+        if (bankAmount.get() - dto.getRequest().getAmount() < 0) {
             System.out.printf("%s: Заявка: %s НЕ ВЫПОЛНЕНА. Получена от: %s. Сумма больше баланса банка." +
-                    " Баланс банка: %d%n", name, dto.getRequest(), dto.getCallerName(), bankAmount);
+                    " Баланс банка: %d%n", name, dto.getRequest(), dto.getCallerName(), bankAmount.get());
             return;
         }
-        bankAmount -= dto.getRequest().getAmount();
+        bankAmount.getAndUpdate((amount) -> amount - dto.getRequest().getAmount());
         System.out.printf("%s: Заявка: %s УСПЕШНО ВЫПОЛНЕНА. Получена от: %s. Баланс банка: %d%n",
-                name, dto.getRequest(), dto.getCallerName(), bankAmount);
+                name, dto.getRequest(), dto.getCallerName(), bankAmount.get());
     }
 
 
