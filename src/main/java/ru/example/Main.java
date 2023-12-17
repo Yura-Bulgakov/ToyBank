@@ -36,9 +36,9 @@ public class Main {
         };
 
         List<BackAmountService> backAmountServices = new ArrayList<>(3);
-        backAmountServices.add(new BackAmountService(5000, backSystem, 10000));
-        backAmountServices.add(new BackAmountService(5000, backSystem, 1000));
-        backAmountServices.add(new BackAmountService(5000, backSystem, 20000));
+        backAmountServices.add(new BackAmountService(5000, 10000, backSystem::setBankAmount));
+        backAmountServices.add(new BackAmountService(5000, 1000, backSystem::setBankAmount));
+        backAmountServices.add(new BackAmountService(5000, 20000, backSystem::setBankAmount));
 
         Client client1 = new Client("Клиент1",
                 new Request("Клиент1", 10000, RequestType.PAYMENT),

@@ -1,22 +1,23 @@
 package ru.example.back;
 
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
-public class BackAmountService implements Callable<Boolean> {
+public class BackAmountService implements Callable<Void> {
     private final int processTime;
-    private final BackSystem backSystem;
     private final int gettingAmount;
+    private final Consumer<Integer> backSystemAmountUpper;
 
-    public BackAmountService(int processTime, BackSystem backSystem, int gettingAmount) {
+    public BackAmountService(int processTime, int gettingAmount, Consumer<Integer> backSystemAmountUpper) {
         this.processTime = processTime;
-        this.backSystem = backSystem;
         this.gettingAmount = gettingAmount;
+        this.backSystemAmountUpper = backSystemAmountUpper;
     }
 
     @Override
-    public Boolean call() throws Exception {
+    public Void call() throws Exception {
         Thread.sleep(processTime);
-        backSystem.setBankAmount(gettingAmount);
-        return true;
+        backSystemAmountUpper.accept(gettingAmount);
+        return null;
     }
 }
