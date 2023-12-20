@@ -1,7 +1,6 @@
 package ru.example.back;
 
 import ru.example.request.HandlingRequestDto;
-import ru.example.request.RequestType;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -23,8 +22,7 @@ public class BackSystem {
     }
 
     public void processRequest(HandlingRequestDto dto) {
-        RequestType type = dto.getRequest().getRequestType();
-        switch (type) {
+        switch (dto.getRequest().getRequestType()) {
             case CREDIT: {
                 handleCredit(dto);
                 break;

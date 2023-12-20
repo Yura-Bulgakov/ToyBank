@@ -1,19 +1,20 @@
 package ru.example.client;
 
 import ru.example.request.Request;
+import ru.example.trasfer.Sender;
 
-import java.util.function.Consumer;
+import java.io.IOException;
 
 public class Client implements Runnable {
     private final String name;
     private final Request request;
-    private final Consumer<Request> requestConsumer;
+    private final Sender<Request> requestSender;
 
 
-    public Client(String name, Request request, Consumer<Request> requestConsumer) {
+    public Client(String name, Request request, Sender<Request> requestSender) {
         this.name = name;
         this.request = request;
-        this.requestConsumer = requestConsumer;
+        this.requestSender = requestSender;
     }
 
     public String getName() {
@@ -22,7 +23,11 @@ public class Client implements Runnable {
 
     @Override
     public void run() {
-        System.out.printf("%s: Заявка%s отправлена в банк%n", name, request);
-        requestConsumer.accept(request);
+        try {
+            requestSender.send(request);
+            System.out.printf("%s: Заявка%s отправлена в банк%n", name, request);
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при отправке заявки");
+        }
     }
 }

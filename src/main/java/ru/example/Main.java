@@ -12,29 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class Main {
     public static void main(String[] args) {
-        FrontalSystem frontalSystem = new FrontalSystem(2);
+        FrontalSystem<Request> frontalSystem = new FrontalSystem<>(2);
         BackSystem backSystem = new BackSystem("Бэк система");
         ExecutorService executorService = Executors.newFixedThreadPool(7);
-        Supplier<Request> safeRequestSupplier = () -> {
-            try {
-                return frontalSystem.takeRequest();
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Не удалось передать заявку обработчику");
-            }
-        };
-        Consumer<Request> safeRequestConsumer = (request) -> {
-            try {
-                frontalSystem.addRequest(request);
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Не удалось передать заявку обработчику");
-            }
-        };
-
         List<BackAmountService> backAmountServices = new ArrayList<>(3);
         backAmountServices.add(new BackAmountService(5000, 10000, backSystem::setBankAmount));
         backAmountServices.add(new BackAmountService(5000, 1000, backSystem::setBankAmount));
@@ -42,23 +25,23 @@ public class Main {
 
         Client client1 = new Client("Клиент1",
                 new Request("Клиент1", 10000, RequestType.PAYMENT),
-                safeRequestConsumer);
+                frontalSystem);
         Client client2 = new Client("Клиент2",
                 new Request("Клиент2", 15000, RequestType.PAYMENT),
-                safeRequestConsumer);
+                frontalSystem);
         Client client3 = new Client("Клиент3",
                 new Request("Клиент3", 20000, RequestType.PAYMENT),
-                safeRequestConsumer);
+                frontalSystem);
         Client client4 = new Client("Клиент4",
                 new Request("Клиент4", 5000, RequestType.CREDIT),
-                safeRequestConsumer);
+                frontalSystem);
         Client client5 = new Client("Клиент5",
                 new Request("Клиент5", 150000, RequestType.CREDIT),
-                safeRequestConsumer);
+                frontalSystem);
 
-        RequestHandler requestHandler1 = new RequestHandler("Обработчик заявок №1", safeRequestSupplier,
+        RequestHandler requestHandler1 = new RequestHandler("Обработчик заявок №1", frontalSystem,
                 backSystem::processRequest);
-        RequestHandler requestHandler2 = new RequestHandler("Обработчик заявок №2", safeRequestSupplier,
+        RequestHandler requestHandler2 = new RequestHandler("Обработчик заявок №2", frontalSystem,
                 backSystem::processRequest);
 
         try {

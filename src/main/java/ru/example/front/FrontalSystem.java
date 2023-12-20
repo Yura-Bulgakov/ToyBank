@@ -1,21 +1,34 @@
 package ru.example.front;
 
-import ru.example.request.Request;
+import ru.example.trasfer.Receiver;
+import ru.example.trasfer.Sender;
 
+import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
-public class FrontalSystem {
-    private final ArrayBlockingQueue<Request> requestsQueue;
+public class FrontalSystem<T> implements Sender<T>, Receiver<T> {
+    private final BlockingQueue<T> requestsQueue;
 
     public FrontalSystem(int capacity) {
         requestsQueue = new ArrayBlockingQueue<>(capacity);
     }
 
-    public void addRequest(Request request) throws InterruptedException {
-        requestsQueue.put(request);
+    @Override
+    public T receive() throws IOException {
+        try {
+            return requestsQueue.take();
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        }
     }
 
-    public Request takeRequest() throws InterruptedException {
-        return requestsQueue.take();
+    @Override
+    public void send(T t) throws IOException {
+        try {
+            requestsQueue.put(t);
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        }
     }
 }
