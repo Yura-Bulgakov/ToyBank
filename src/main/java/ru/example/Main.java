@@ -17,7 +17,9 @@ public class Main {
     public static void main(String[] args) {
         FrontalSystem<Request> frontalSystem = new FrontalSystem<>(2);
         BackSystem backSystem = new BackSystem("Бэк система");
-        ExecutorService executorService = Executors.newFixedThreadPool(7);
+        ExecutorService clientExecutorService = Executors.newFixedThreadPool(1);
+        ExecutorService handlerExecutorService = Executors.newFixedThreadPool(1);
+        ExecutorService backExecutorService = Executors.newFixedThreadPool(3);
         List<BackAmountService> backAmountServices = new ArrayList<>(3);
         backAmountServices.add(new BackAmountService(5000, 10000, backSystem::setBankAmount));
         backAmountServices.add(new BackAmountService(5000, 1000, backSystem::setBankAmount));
@@ -45,16 +47,16 @@ public class Main {
                 backSystem::processRequest);
 
         try {
-            executorService.invokeAll(backAmountServices);
+            backExecutorService.invokeAll(backAmountServices);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        executorService.submit(client1);
-        executorService.submit(client2);
-        executorService.submit(client3);
-        executorService.submit(client4);
-        executorService.submit(client5);
-        executorService.submit(requestHandler1);
-        executorService.submit(requestHandler2);
+        clientExecutorService.submit(client1);
+        clientExecutorService.submit(client2);
+        clientExecutorService.submit(client3);
+        clientExecutorService.submit(client4);
+        clientExecutorService.submit(client5);
+        handlerExecutorService.submit(requestHandler1);
+        handlerExecutorService.submit(requestHandler2);
     }
 }
