@@ -18,7 +18,7 @@ public class Main {
         FrontalSystem<Request> frontalSystem = new FrontalSystem<>(2);
         BackSystem backSystem = new BackSystem("Бэк система");
         ExecutorService clientExecutorService = Executors.newFixedThreadPool(1);
-        ExecutorService handlerExecutorService = Executors.newFixedThreadPool(1);
+        ExecutorService handlerExecutorService = Executors.newFixedThreadPool(2);
         ExecutorService backExecutorService = Executors.newFixedThreadPool(3);
         List<BackAmountService> backAmountServices = new ArrayList<>(3);
         backAmountServices.add(new BackAmountService(5000, 10000, backSystem::setBankAmount));
